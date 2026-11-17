@@ -7,23 +7,29 @@
 <title>مدیریت کاتالوگ</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f2f3f6;--ink:#14284b;--mute:#5b6783;--card:#fff;--line:#d9dde7;--acc:#9c2a3a}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1730;--ink:#eef0f6;--mute:#a4adc4;--card:#16224a;--line:#2a3763;--acc:#e07a8a}}
+:root{--bg:#f2f3f6;--ink:#14284b;--mute:#5b6783;--card:#fff;--line:#d9dde7;--acc:#9c2a3a;--ok:#1d7a46}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1730;--ink:#eef0f6;--mute:#a4adc4;--card:#16224a;--line:#2a3763;--acc:#e07a8a;--ok:#5fd08e}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.8;padding:20px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.8;padding:20px 20px 120px}
 .w{max-width:640px;margin:auto}
 h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:28px 0 10px}
 p{color:var(--mute);margin:4px 0 14px;font-size:14px}
-form,.row{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
+form,.row,.box{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
 label{display:block;font-size:14px;margin:10px 0 2px}
 input,select,textarea{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
-button,.btn{font:inherit;padding:10px 18px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;margin-top:14px}
+button{font:inherit;padding:10px 18px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;margin-top:14px}
 button.s{background:transparent;color:var(--ink)}
 button.d{background:transparent;color:var(--acc);border-color:var(--acc);margin:0}
+button:disabled{opacity:.5}
 .row{display:flex;gap:12px;align-items:center;margin-bottom:10px;padding:10px}
 .row img{width:56px;height:70px;object-fit:cover;border-radius:4px}
 .row div{flex:1}.row small{color:var(--mute)}
-#msg{color:var(--acc);min-height:24px;font-size:14px}
+#bar{position:fixed;inset:auto 0 0 0;background:var(--card);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px))}
+#bar .in{max-width:640px;margin:auto;display:flex;gap:12px;align-items:center}
+#bar button{margin:0;white-space:nowrap}
+#st{flex:1;font-size:14px;color:var(--mute)}
+#st.ok{color:var(--ok)}#st.er{color:var(--acc)}
+.hid{display:none}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 </style>
 </head>
@@ -31,36 +37,82 @@ button.d{background:transparent;color:var(--acc);border-color:var(--acc);margin:
 <div class="w">
 <h1>مدیریت کاتالوگ</h1>
 <p>این صفحه فقط برای شماست. لینکی به آن از سایت داده نشده است.</p>
-<form id="f">
+
+<div class="box" id="tk">
+<b>اتصال به GitHub (فقط یک بار)</b>
+<p>توکن را از GitHub بسازید و اینجا بچسبانید. توکن فقط در همین مرورگر ذخیره می‌شود.</p>
+<input id="t" type="password" placeholder="github_pat_..." autocomplete="off" dir="ltr">
+<button id="ts">ذخیره و اتصال</button>
+</div>
+
+<form id="f" class="hid">
 <label for="n">نام اثر</label><input id="n" required>
 <label for="c">دسته</label><select id="c"><option>تابلوفرش</option><option>فرش</option></select>
 <label for="z">ابعاد (اختیاری)</label><input id="z" placeholder="مثلاً ۱۲ متری یا ۷۰×۵۰">
 <label for="d">توضیح کوتاه (اختیاری)</label><textarea id="d" rows="2"></textarea>
-<label for="p">عکس اثر</label><input id="p" type="file" accept="image/*" required>
-<button type="submit">افزودن به کاتالوگ</button>
+<label for="p">عکس اثر (می‌توانید چند عکس را یک‌جا انتخاب کنید)</label><input id="p" type="file" accept="image/*" multiple required>
+<button type="submit">افزودن و انتشار</button>
 </form>
-<div id="msg" role="status"></div>
-<h2>آثار ثبت‌شده (<span id="k">0</span>)</h2>
+
+<h2>آثار (<span id="k">0</span>)</h2>
 <div id="l"></div>
-<h2>انتشار روی سایت</h2>
-<p>بعد از افزودن آثار، فایل را دانلود کنید و در Netlify کنار index.html قرار دهید (جایگزین products.json قبلی).</p>
-<button id="x">دانلود products.json</button>
-<button id="i" class="s">وارد کردن products.json قبلی</button>
-<input id="im" type="file" accept=".json" hidden>
+<button id="out" class="s hid">خروج و پاک کردن توکن</button>
 </div>
+
+<div id="bar" class="hid"><div class="in"><span id="st" role="status">آماده</span><button id="pub" disabled>انتشار دوباره</button></div></div>
+
 <script>
-var KEY='alimohamadi_products',items=[];
-try{items=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){items=[]}
 var $=function(i){return document.getElementById(i)};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){$('msg').textContent='حافظه مرورگر پر است. ابتدا فایل را دانلود کنید و آثار قدیمی را پاک کنید.'}draw()}
+var tok=localStorage.getItem('gh_token')||'',login='',items=[],dirty=false,REPO='Silk-gallery';
+function say(m,c){$('st').textContent=m;$('st').className=c||''}
+function api(path,opt){
+  opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'},opt.headers||{});
+  return fetch('https://api.github.com'+path,opt).then(function(r){
+    if(!r.ok){var e=new Error('http');e.status=r.status;throw e}return r});
+}
+function errText(e){
+  if(e.status===401)return 'توکن معتبر نیست یا منقضی شده.';
+  if(e.status===403||e.status===404)return 'توکن به مخزن Silk-gallery دسترسی ندارد.';
+  if(e.status===409||e.status===422)return 'فایل در GitHub تغییر کرده. صفحه را تازه کنید و دوباره امتحان کنید.';
+  return 'ارتباط برقرار نشد. اینترنت را بررسی کنید.';
+}
 function draw(){
   $('k').textContent=items.length;
   $('l').innerHTML=items.map(function(p,i){
-    return '<div class="row"><img src="'+p.image+'" alt=""><div>'+p.name.replace(/</g,'&lt;')+'<br><small>'+p.category+'</small></div><button class="d" data-i="'+i+'">حذف</button></div>';
-  }).join('')||'<p>هنوز اثری اضافه نشده است.</p>';
+    return '<div class="row"><img src="'+p.image+'" alt=""><div>'+String(p.name).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<br><small>'+p.category+'</small></div><button class="d" data-i="'+i+'">حذف</button></div>';
+  }).join('')||'<p>هنوز اثری ثبت نشده است.</p>';
+  $('pub').disabled=!dirty;
 }
+function show(){
+  var on=!!tok;
+  $('tk').classList.toggle('hid',on);$('f').classList.toggle('hid',!on);
+  $('bar').classList.toggle('hid',!on);$('out').classList.toggle('hid',!on);
+}
+function sha(){
+  return api('/repos/'+login+'/'+REPO+'/contents?ref=main').then(function(r){return r.json()}).then(function(l){
+    var f=l.filter(function(x){return x.name==='products.json'})[0];return f?f.sha:null});
+}
+function load(){
+  say('در حال اتصال...');
+  return api('/user').then(function(r){return r.json()}).then(function(u){
+    login=u.login;
+    return api('/repos/'+login+'/'+REPO+'/contents/products.json?ref=main',{headers:{Accept:'application/vnd.github.raw+json'}});
+  }).then(function(r){return r.text()}).then(function(t){
+    try{items=JSON.parse(t)}catch(e){items=[]}
+    if(!Array.isArray(items))items=[];
+    dirty=false;draw();say('وصل شد. آثار فعلی سایت بارگذاری شد.','ok');
+  }).catch(function(e){say(errText(e),'er');draw()});
+}
+$('ts').onclick=function(){
+  var v=$('t').value.trim();if(!v)return;
+  tok=v;localStorage.setItem('gh_token',v);show();load();
+};
+$('out').onclick=function(){
+  if(!confirm('توکن از این مرورگر پاک شود؟'))return;
+  localStorage.removeItem('gh_token');tok='';items=[];show();draw();$('t').value='';
+};
 $('l').onclick=function(e){var b=e.target.closest('button');if(!b)return;
-  if(confirm('این اثر حذف شود؟')){items.splice(+b.dataset.i,1);save()}};
+  if(confirm('این اثر حذف شود؟')){items.splice(+b.dataset.i,1);dirty=true;draw();doPublish()}};
 function shrink(file){return new Promise(function(res,rej){
   var r=new FileReader();r.onerror=rej;
   r.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){
@@ -69,19 +121,28 @@ function shrink(file){return new Promise(function(res,rej){
     res(c.toDataURL('image/jpeg',.75))};im.src=r.result};
   r.readAsDataURL(file)})}
 $('f').onsubmit=function(e){e.preventDefault();
-  shrink($('p').files[0]).then(function(img){
-    items.unshift({name:$('n').value.trim(),category:$('c').value,size:$('z').value.trim(),desc:$('d').value.trim(),image:img});
-    save();$('f').reset();$('msg').textContent='اثر اضافه شد.';
-  }).catch(function(){$('msg').textContent='عکس خوانده نشد. عکس دیگری انتخاب کنید.'})};
-$('x').onclick=function(){
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(items)],{type:'application/json'}));
-  a.download='products.json';a.click()};
-$('i').onclick=function(){$('im').click()};
-$('im').onchange=function(){var r=new FileReader();r.onload=function(){
-  try{var d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;items=d;save();$('msg').textContent='فایل وارد شد.'}
-  catch(e){$('msg').textContent='فایل معتبر نیست.'}};r.readAsText(this.files[0])};
-draw();
+  var files=Array.prototype.slice.call($('p').files),base=$('n').value.trim();
+  say('در حال آماده‌سازی عکس‌ها...');
+  Promise.all(files.map(shrink)).then(function(imgs){
+    var o={c:$('c').value,z:$('z').value.trim(),d:$('d').value.trim()};
+    var made=imgs.map(function(img,i){return {name:imgs.length>1?base+' '+(i+1):base,category:o.c,size:o.z,desc:o.d,image:img}});
+    items=made.concat(items);dirty=true;draw();$('f').reset();doPublish();
+  }).catch(function(){say('عکس خوانده نشد. عکس دیگری انتخاب کنید.','er')})};
+function b64(text){return new Promise(function(res,rej){
+  var r=new FileReader();r.onerror=rej;
+  r.onload=function(){res(String(r.result).split(',')[1])};
+  r.readAsDataURL(new Blob([text],{type:'application/json'}))})}
+function doPublish(){
+  var btn=$('pub');btn.disabled=true;say('در حال انتشار...');
+  Promise.all([sha(),b64(JSON.stringify(items))]).then(function(a){
+    var body={message:'Update catalog',content:a[1],branch:'main'};if(a[0])body.sha=a[0];
+    return api('/repos/'+login+'/'+REPO+'/contents/products.json',{method:'PUT',body:JSON.stringify(body)});
+  }).then(function(){dirty=false;draw();say('منتشر شد. حدود یک دقیقه بعد در سایت دیده می‌شود.','ok')})
+  .catch(function(e){btn.disabled=false;say(errText(e),'er')});
+}
+$('pub').onclick=doPublish;
+window.addEventListener('beforeunload',function(e){if(dirty){e.preventDefault();e.returnValue=''}});
+show();draw();if(tok)load();
 </script>
 </body>
 </html>
