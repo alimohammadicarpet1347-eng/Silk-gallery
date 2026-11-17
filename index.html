@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>برادران علیمحمدی | گالری هنر ابریشم</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f3f6;--ink:#14284b;--mute:#5b6783;--card:#fff;--line:#d9dde7;--acc:#9c2a3a}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1730;--ink:#eef0f6;--mute:#a4adc4;--card:#16224a;--line:#2a3763;--acc:#e07a8a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.8}
+header{padding:56px 20px 32px;text-align:center;max-width:720px;margin:auto}
+header small{color:var(--mute);letter-spacing:.12em}
+h1{font-size:clamp(28px,6vw,46px);font-weight:800;margin:8px 0;line-height:1.4}
+header p{color:var(--mute);margin:0}
+nav{display:flex;gap:8px;justify-content:center;margin:8px 0 28px;flex-wrap:wrap}
+nav button{font:inherit;padding:8px 22px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+nav button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+main{max-width:1100px;margin:auto;padding:0 16px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
+article{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+article img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;background:var(--line)}
+.b{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+.b h2{font-size:17px;margin:0}
+.b span{color:var(--mute);font-size:14px}
+.b a{margin-top:auto;padding-top:10px;color:var(--acc);font-weight:600;text-decoration:none}
+.b a:hover,.b a:focus-visible{text-decoration:underline}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:40px 0}
+footer{text-align:center;padding:32px 16px 48px;border-top:1px solid var(--line);color:var(--mute)}
+footer a{color:var(--acc);font-weight:600}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+<small>PERSIAN SILK ART GALLERY</small>
+<h1>هنر اصیل ایرانی، زیبایی ماندگار</h1>
+<p>گالری تخصصی فرش و تابلوفرش تمام ابریشم قم</p>
+<p>برای دریافت قیمت و مشاوره خرید، مشخصات هر اثر را ببینید و استعلام بگیرید.</p>
+</header>
+<nav id="f">
+<button data-c="" aria-pressed="true">همه آثار</button>
+<button data-c="تابلوفرش" aria-pressed="false">تابلوفرش</button>
+<button data-c="فرش" aria-pressed="false">فرش</button>
+</nav>
+<main id="g"></main>
+<footer>
+<div>تولیدی بازرگانی برادران علیمحمدی · قیمت محصولات فقط با استعلام</div>
+<div><a href="https://www.instagram.com/alimohamadi.silkrug/" target="_blank" rel="noopener">@alimohamadi.silkrug</a></div>
+<div>برای مشاوره و سفارش، در اینستاگرام پیام دهید.</div>
+</footer>
+<script>
+var all=[],cat='',g=document.getElementById('g');
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function render(){
+  var l=all.filter(function(p){return !cat||p.category===cat});
+  if(!l.length){g.innerHTML='<p class="empty">در این دسته فعلاً اثری ثبت نشده است.</p>';return}
+  g.innerHTML=l.map(function(p){
+    return '<article><img loading="lazy" src="'+p.image+'" alt="'+esc(p.name)+'"><div class="b"><h2>'+esc(p.name)+'</h2>'+
+    (p.size?'<span>ابعاد: '+esc(p.size)+'</span>':'')+(p.desc?'<span>'+esc(p.desc)+'</span>':'')+
+    '<a href="https://www.instagram.com/alimohamadi.silkrug/" target="_blank" rel="noopener">استعلام قیمت</a></div></article>';
+  }).join('');
+}
+document.getElementById('f').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;cat=b.dataset.c;
+  this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});render();
+});
+fetch('products.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(d){all=d;render()}).catch(function(){all=[];render()});
+</script>
+</body>
+</html>
